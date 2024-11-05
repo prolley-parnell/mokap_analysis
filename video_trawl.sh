@@ -14,9 +14,10 @@ do
       ext=$(echo "$video_file" | cut -d "." -f 2)
       name=$(echo "$video_file" | cut -d "." -f 1)
 
+    # If the file is an mp4 then process it
       if [ "$ext" = "mp4" ] ; then
         frame_folder="$time_folder"/"$name"
-        #if [ ! -d "$time_folder"/"$name" ]; then
+        # If there is not a directory with the same name as the video
         if [ ! -d "$frame_folder" ]; then
           echo "No Frame File for $frame_folder"
           echo "Make video into frames? [Y/N]: "
@@ -45,5 +46,4 @@ do
       fi
     done
   done
-  #echo "$entry"
 done
