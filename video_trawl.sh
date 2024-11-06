@@ -14,7 +14,7 @@ do
       ext=$(echo "$video_file" | cut -d "." -f 2)
       name=$(echo "$video_file" | cut -d "." -f 1)
 
-    # If the file is an mp4 then process it
+      # If the file is an mp4 then process it
       if [ "$ext" = "mp4" ] ; then
         frame_folder="$time_folder"/"$name"
         # If there is not a directory with the same name as the video
@@ -26,7 +26,7 @@ do
             mkdir "$time_folder"/"$name"
             ffmpeg -i "$time_folder"/"$video_file" -q:v 2 -start_number 0 "$time_folder"/"$name"/'%05d.jpg'
           else
-            break
+            exit
           fi
         fi
         if [ -d "$frame_folder" ]; then
@@ -37,10 +37,16 @@ do
             if [ "$response" = "y" ] ; then
               python3 annotate_video.py --video_dir "$frame_folder" --video_name "$name"
             else
-              break
+              exit
             fi
           else
             echo "Annotations Exist Already"
+          fi
+          if [ ! -f "$time_folder"/"$name".tar ]; then
+            cd "$time_folder"
+            # Zip up the folder
+            tar -cf "$name".tar "$name"
+            cd -
           fi
         fi
       fi
