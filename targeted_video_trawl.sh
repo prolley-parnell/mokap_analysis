@@ -1,17 +1,13 @@
 #!/bin/bash
-
+parent_folder="$(pwd)"
 video_folder=/Users/persie/Movies/Mokap_Video
 video_list=$1
 destination_folder=/Users/persie/PhD_Code/cluster/data/input/
 #This is the typical file organisation video -> date -> date and time -> session
 
-#while IFS="" read -r video_name || [ -n "$video_name" ]
-#do
-#  printf '%s\n' "$video_folder"/"$video_name"
-#done < $video_list
 
 #Find each session
-while IFS="" read -r video_name || [ -n "$video_name" ]
+cat ${video_list} | while read video_name || [[ -n $video_name ]];
 do
   # If the file is an mp4 then process it
   if [ ! -f "$video_folder"/"$video_name".mp4 ] ; then
@@ -23,7 +19,7 @@ do
     if [ ! -d "$frame_folder" ]; then
       echo "No Frame File for $frame_folder"
       echo "Make video into frames? [Y/N]: "
-      read response #error here
+      read response < /dev/tty
       if [ "$response" = "y" ] ; then
         mkdir "$video_folder"/"$video_name"
         ffmpeg -i "$video_folder"/"$video_name".mp4 -q:v 2 -start_number 0 "${frame_folder}"/'%05d.jpg'
@@ -33,10 +29,11 @@ do
     fi
     if [ -d "$frame_folder" ]; then
       echo "Frame File Exists"
-      name=$(echo "$video_name" | cut -d "/" -f 2)
+      name=$(echo "$video_name" | cut -d "/" -f 3)
+      echo $name
       if [ ! -f "$frame_folder"/"$name".csv ]; then
         echo "Annotate Frames for $name? [Y/N]: "
-        read response
+        read response < /dev/tty
         if [ "$response" = "y" ] ; then
           python3 annotate_video.py --video_dir "$frame_folder" --video_name "$name"
         else
@@ -46,12 +43,13 @@ do
         echo "Annotations Exist Already"
       fi
       if [ ! -f "$destination_folder"/"$video_name".tar ]; then
-        cd ../"$frame_folder"
+        cd "$frame_folder" && cd ..
+        echo ${name}
         # Zip up the folder
         tar -cf "$name".tar "$name"
         mv "$name".tar "$destination_folder"
-        cd -
+        cd "$parent_folder"
       fi
     fi
   fi
-done < $video_list
+done
