@@ -46,7 +46,7 @@ do
         cd "$frame_folder" && cd ..
         echo ${name}
         # Zip up the folder
-        tar -cf "$name".tar "$name"
+        tar --no-xattrs --exclude="._*" -cf "$name".tar "$name"
         mv "$name".tar "$destination_folder"
         cd "$parent_folder"
       fi
