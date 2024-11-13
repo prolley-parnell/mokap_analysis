@@ -2,7 +2,7 @@
 parent_folder="$(pwd)"
 video_folder=/Users/persie/Movies/Mokap_Video
 video_list=$1
-destination_folder=/Users/persie/PhD_Code/cluster/data/input/
+destination_folder=/Users/persie/PhD_Code/cluster/data/input
 #This is the typical file organisation video -> date -> date and time -> session
 
 
@@ -28,9 +28,8 @@ do
       fi
     fi
     if [ -d "$frame_folder" ]; then
-      echo "Frame File Exists"
+      echo "Frame File Exists at ${frame_folder}"
       name=$(echo "$video_name" | cut -d "/" -f 3)
-      echo $name
       if [ ! -f "$frame_folder"/"$name".csv ]; then
         echo "Annotate Frames for $name? [Y/N]: "
         read response < /dev/tty
@@ -40,14 +39,14 @@ do
           exit
         fi
       else
-        echo "Annotations Exist Already"
+        echo "Annotations Exist Already for ${name}"
       fi
-      if [ ! -f "$destination_folder"/"$video_name".tar ]; then
+      if [ ! -f "$destination_folder"/"$name".tar.bz2 ]; then
+        echo "Compressing frames and annotations to '${destination_folder}/${name}.tar.bz2'"
         cd "$frame_folder" && cd ..
-        echo ${name}
         # Zip up the folder
-        tar --no-xattrs --exclude="._*" -cf "$name".tar "$name"
-        mv "$name".tar "$destination_folder"
+        tar --no-xattrs --exclude="._*" -cjf "$name".tar.bz2 "$name"
+        mv "$name".tar.bz2 "$destination_folder"
         cd "$parent_folder"
       fi
     fi

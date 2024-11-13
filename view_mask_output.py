@@ -9,7 +9,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--video_dir", type=str, required=True, help="Relative path of folder with video frames")
 parser.add_argument("--experiment_name", type=str, required=True, help="Video name also referred to as experiment name")
-parser.add_argument("--source_folder", type=str, required=True, help="Output file folder path, assumes the name of the file is the 'experiment_name.npy'")
+parser.add_argument("--source_folder", type=str, required=True, help="Output file folder path, assumes the name of the file is the 'experiment_name.npz'")
 
 
 def scan_frames(video_dir):
@@ -22,17 +22,17 @@ def scan_frames(video_dir):
     return frame_names
 
 def drawMask(frame_idx, frame_name):
-    global frame, mask_file
+    global frame, loaded_mask_file
     frame = cv2.imread(os.path.join(args.video_dir, frame_name))
-    if frame_idx in mask_file:
-        print("We have a mask")
-        for out_obj_id, out_mask in mask_file[frame_idx].items():
-            h, w = out_mask.shape[-2:]
-            color = np.array([50., 100., 0.], dtype=np.uint8)
-            mask_image = out_mask.reshape(h, w, 1) * color.reshape(1, 1, -1)
-            frame_masked = cv2.addWeighted(frame, 0.5, mask_image, 0.5, 0)
-            frame_masked[mask_image == 0] = frame[mask_image == 0]
-            frame = frame_masked
+    m = np.extract(loaded_mask_file[:, 0] == frame_idx, loaded_mask_file[:, 1])
+    if m.any():
+        color = np.array([50., 100., 0.], dtype=np.uint8)
+        r, c = np.unravel_index(m, np.shape(frame)[:2], order='C')
+        segment_mask = np.zeros_like(frame, dtype=np.uint8)
+        segment_mask[r,c] = 255 * color.reshape(1, 1, -1)
+        frame_masked = cv2.addWeighted(frame, 0.5, segment_mask, 0.5, 0)
+        frame_masked[segment_mask == 0] = frame[segment_mask == 0]
+        frame = frame_masked
 
 
 def getFrame(frame_nr):
@@ -41,8 +41,8 @@ def getFrame(frame_nr):
     drawMask(frame_idx, frame_names[frame_idx])
 
 def main(args):
-    global frame_names, mask_file, frame
-    mask_file = np.load(f"{args.source_folder}/{args.experiment_name}.npy", allow_pickle=True)[()] #Allows the dict to be extracted from npy
+    global frame_names, loaded_mask_file, frame
+    loaded_mask_file = np.load(f"{args.source_folder}/{args.experiment_name}.npz")['obj_0'] #Allows the dict to be extracted from npy
 
     frame_names = scan_frames(args.video_dir)
     frame_slider_max = len(frame_names)
