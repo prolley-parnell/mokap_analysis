@@ -40,17 +40,19 @@ def getFrame(frame_nr):
     frame_idx = frame_nr
     drawMask(frame_idx, frame_names[frame_idx])
 
+
 def main(args):
     global frame_names, loaded_mask_file, frame
     loaded_mask_file = np.load(f"{args.source_folder}/{args.experiment_name}.npz")['obj_0'] #Allows the dict to be extracted from npy
 
     frame_names = scan_frames(args.video_dir)
     frame_slider_max = len(frame_names)
-    frame_idx = 0
+    frame_idx = 1578
     frame = cv2.imread(os.path.join(args.video_dir, frame_names[frame_idx]))
 
-    cv2.namedWindow(f"User Input: {args.experiment_name}", cv2.WINDOW_AUTOSIZE)
+    cv2.namedWindow(f"User Input: {args.experiment_name}", cv2.WINDOW_KEEPRATIO)
     cv2.createTrackbar("Frame", f"User Input: {args.experiment_name}", frame_idx, frame_slider_max, getFrame)
+
 
     # main loop
     while 1:
