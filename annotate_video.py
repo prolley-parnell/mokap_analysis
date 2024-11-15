@@ -72,7 +72,7 @@ def main(args):
     annotation_list = []
 
 
-    cv2.namedWindow(f"User Input: {args.video_name}", cv2.WINDOW_NORMAL)
+    cv2.namedWindow(f"User Input: {args.video_name}", cv2.WINDOW_GUI_NORMAL )
     cv2.createTrackbar("Frame", f"User Input: {args.video_name}", frame_idx, frame_slider_max, getFrame)
     cv2.setMouseCallback(f"User Input: {args.video_name}", mouseCB)
 

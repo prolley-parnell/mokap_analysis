@@ -29,7 +29,7 @@ do
         read response < /dev/tty
         if [ "$response" = "y" ] ; then
           mkdir "$video_folder"/"$video_name"
-          ffmpeg -i "$video_folder"/"$video_name".mp4 -q:v 2 -start_number 0 "${frame_folder}"/'%05d.jpg'
+          < /dev/null ffmpeg -i "$video_folder"/"$video_name".mp4 -q:v 2 -start_number 0 "${frame_folder}"/'%05d.jpg'
         else
           exit
         fi
