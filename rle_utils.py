@@ -1,10 +1,13 @@
-
 import os
 import pickle
 import numpy as np
 import pycocotools.mask as pmask
-from tqdm import tqdm
 from pathlib import Path
+try:
+    from tqdm import tqdm
+    tqdm_installed = True
+except ImportError:
+    tqdm_installed = False
 
 
 def open_silhouette_video(npz_file, memmap=True):
@@ -32,11 +35,8 @@ def silhouettes_generator(img_indices, vector_indices, image_shape):
     """
         Generator for loading silhouettes one by one from an open npz container
     """
-    frames = np.unique(img_indices)
-    for frame in frames:
-        silhouette = np.zeros((image_shape[1], image_shape[0]), dtype=np.uint8)
-        silhouette.ravel()[vector_indices[img_indices == frame]] = 255
-        yield silhouette
+    for frame in np.unique(img_indices):
+        yield read_silhouette_frame(img_indices, vector_indices, image_shape, frame)
 
 
 def sizeof_fmt(num, suffix="B"):
@@ -73,7 +73,12 @@ def convert_to_RLE(npz_file_path, image_shape=(1440, 1080), delete_source=False,
 
         all_silhouettes = {}
 
-        for i in tqdm(range(nb_frames)):
+        if tqdm_installed:
+            rng = tqdm(range(nb_frames))
+        else:
+            rng = range(nb_frames)
+
+        for i in rng:
             silhouette = next(gen)
             frame_nb = uniq_frames[i]
             all_silhouettes[frame_nb] = pmask.encode(np.asfortranarray(silhouette))
