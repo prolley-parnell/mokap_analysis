@@ -51,34 +51,38 @@ def sizeof_fmt(num, suffix="B"):
     return f"{num:.1f} Yi{suffix}"
 
 
-def convert_to_RLE(npz_file_path, image_shape=(1440, 1080), delete_source=False):
+def convert_to_RLE(npz_file_path, image_shape=(1440, 1080), delete_source=False, skip_existing=True):
     """
         Convert a npz file containing a whole video worth of masks into a much smaller Run Length Encoding file
     """
     npz_file = Path(npz_file_path)
     rle_file = npz_file.parent / f"{npz_file.stem}.rle"
 
-    print(f"\nConverting {npz_file.name}...")
-    img_indices, vector_indices = open_silhouette_video(npz_file)
+    if skip_existing and rle_file.exists():
+        print(f"\nFile {rle_file.name} exists, skipping...")
 
-    siz_before = os.path.getsize(npz_file)
+    else:
+        print(f"\nConverting {npz_file.name}...")
+        img_indices, vector_indices = open_silhouette_video(npz_file)
 
-    nb_frames = len(np.unique(img_indices))
-    g = silhouettes_generator(img_indices, vector_indices, image_shape)
+        siz_before = os.path.getsize(npz_file)
 
-    all_silhouettes = []
-    for silhouette in tqdm(g, total=nb_frames):
-        all_silhouettes.append(pmask.encode(np.asfortranarray(silhouette)))
+        nb_frames = len(np.unique(img_indices))
+        g = silhouettes_generator(img_indices, vector_indices, image_shape)
 
-    with open(rle_file, 'wb') as f:
-        pickle.dump(all_silhouettes, f, protocol=pickle.HIGHEST_PROTOCOL)
+        all_silhouettes = []
+        for silhouette in tqdm(g, total=nb_frames):
+            all_silhouettes.append(pmask.encode(np.asfortranarray(silhouette)))
 
-    siz_after = os.path.getsize(rle_file)
+        with open(rle_file, 'wb') as f:
+            pickle.dump(all_silhouettes, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-    print(f"  {sizeof_fmt(siz_before)} -> {sizeof_fmt(siz_after)}")
+        siz_after = os.path.getsize(rle_file)
 
-    if delete_source:
-        os.remove(npz_file)
+        print(f"  {sizeof_fmt(siz_before)} -> {sizeof_fmt(siz_after)}")
+
+        if delete_source:
+            os.remove(npz_file)
 
 
 class VideoMask:
