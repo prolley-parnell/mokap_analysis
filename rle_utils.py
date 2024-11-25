@@ -66,13 +66,17 @@ def convert_to_RLE(npz_file_path, image_shape=(1440, 1080), delete_source=False,
         img_indices, vector_indices = open_silhouette_video(npz_file)
 
         siz_before = os.path.getsize(npz_file)
+        uniq_frames = np.unique(img_indices)
 
-        nb_frames = len(np.unique(img_indices))
-        g = silhouettes_generator(img_indices, vector_indices, image_shape)
+        nb_frames = len(uniq_frames)
+        gen = silhouettes_generator(img_indices, vector_indices, image_shape)
 
-        all_silhouettes = []
-        for silhouette in tqdm(g, total=nb_frames):
-            all_silhouettes.append(pmask.encode(np.asfortranarray(silhouette)))
+        all_silhouettes = {}
+
+        for i in tqdm(range(nb_frames)):
+            silhouette = next(gen)
+            frame_nb = uniq_frames[i]
+            all_silhouettes[frame_nb] = pmask.encode(np.asfortranarray(silhouette))
 
         with open(rle_file, 'wb') as f:
             pickle.dump(all_silhouettes, f, protocol=pickle.HIGHEST_PROTOCOL)
@@ -90,12 +94,15 @@ class VideoMask:
         Small class to read a RLE file
     """
     def __init__(self, rle_file_path):
-        self.rle_file = Path(rle_file_path)
-        with open(self.rle_file, 'rb') as f:
-            self.content = pickle.load(f)
+        self.file_path = Path(rle_file_path)
+
+        with open(self.file_path, 'rb') as f:
+            self._content = pickle.load(f)
+
+        self.frames_indices = self._content.keys()
 
     def __getitem__(self, item):
-        return pmask.decode(self.content[item]) * 255
+        return pmask.decode(self._content[item]) * 255
 
 
 ##
