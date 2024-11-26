@@ -28,13 +28,15 @@ def drawAnnotations(annotation, frame_idx):
     frame = cv2.imread(os.path.join(args.video_dir, frame_names[frame_idx]))
 
     if annotation:
-        cropped_list = list(filter(lambda tuple: tuple[3] == frame_idx, annotation))
+        cropped_list = list(filter(lambda tuple: tuple[4] == frame_idx, annotation))
 
         for point in cropped_list:
-            if point[2] == 1:
-                cv2.circle(frame, (point[:2]), 25, (0, 255, 0), -1)
+            if point[3] == 1:
+                cv2.circle(frame, (point[1:3]), 25, (0, 255, 0), -1)
             else:
-                cv2.circle(frame, (point[:2]), 25, (0, 0, 255), -1)
+                cv2.circle(frame, (point[1:3]), 25, (0, 0, 255), -1)
+
+            cv2.putText(frame, str(point[0]), (point[1]-7, point[2]+7), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, thickness=2, color=(0, 0, 0))
 
 
 def getFrame(frame_nr):
@@ -43,7 +45,7 @@ def getFrame(frame_nr):
     drawAnnotations(annotation_list, frame_idx)
 
 def mouseCB(event, x, y, flags, param):
-    global annotation_list, frame_idx
+    global annotation_list, frame_idx, object_id
     update = 1;
     if event == cv2.EVENT_MBUTTONDOWN and annotation_list:
         # Remove the last point
@@ -51,10 +53,10 @@ def mouseCB(event, x, y, flags, param):
         print(annotation_list)
     elif event == cv2.EVENT_LBUTTONDOWN:
         # Add a positive point
-        annotation_list.append([x, y, 1, frame_idx])
+        annotation_list.append([object_id, x, y, 1, frame_idx])
     elif event == cv2.EVENT_RBUTTONDOWN:
         # Add a negative point
-        annotation_list.append([x, y, 0, frame_idx])
+        annotation_list.append([object_id, x, y, 0, frame_idx])
     else:
         update = 0
 
@@ -63,10 +65,11 @@ def mouseCB(event, x, y, flags, param):
 
 
 def main(args):
-    global annotation_list, frame_idx, frame, frame_names
+    global annotation_list, frame_idx, frame, frame_names, object_id
     frame_names = scan_frames(args.video_dir)
     frame_slider_max = len(frame_names)
     frame_idx = 0
+    object_id = 0
     frame = cv2.imread(os.path.join(args.video_dir, frame_names[frame_idx]))
 
     annotation_list = []
@@ -86,13 +89,17 @@ def main(args):
         k = cv2.waitKey(20) & 0xFF
         if k == ord('q'):
             break
+        if k == ord('w'):
+            object_id = object_id+1
+        if k == ord('s'):
+            object_id = max(object_id-1, 0)
 
     # release resources
     cv2.destroyAllWindows()
     cv2.waitKey(1)
 
     output = asarray(annotation_list)
-    savetxt(f"{args.video_dir}/{args.video_name}.csv", output ,delimiter=",", header="X,Y,Score,Frame")
+    savetxt(f"{args.video_dir}/{args.video_name}.csv", output ,delimiter=",", header="Object_ID,X,Y,Score,Frame")
 
 if __name__ == "__main__":
     args = parser.parse_args()
