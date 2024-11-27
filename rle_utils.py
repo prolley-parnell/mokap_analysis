@@ -74,11 +74,11 @@ def convert_to_RLE(npz_file_path, image_shape=(1440, 1080), delete_source=False,
         all_silhouettes = {}
 
         if tqdm_installed:
-            rng = tqdm(range(nb_frames))
+            frame_range = tqdm(range(nb_frames))
         else:
-            rng = range(nb_frames)
+            frame_range = range(nb_frames)
 
-        for i in rng:
+        for i in frame_range:
             silhouette = next(gen)
             frame_nb = uniq_frames[i]
             all_silhouettes[frame_nb] = pmask.encode(np.asfortranarray(silhouette))
