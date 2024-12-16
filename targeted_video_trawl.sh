@@ -2,7 +2,7 @@
 parent_folder="$(pwd)"
 video_folder=/home/persie/Videos/mokap
 video_list=$1
-destination_folder=/home/persie/Code/segment/input
+destination_folder=/media/persie/Storage/Segmentation
 #This is the typical file organisation video -> date -> date and time -> session
 
 echo "Starting trawl"

@@ -1,4 +1,4 @@
-video_list="video_list.txt"
+video_list="reduced_seed_experiment_list.txt"
 
 drive_mount="/media/persie/Storage/AntVideos"
 video_dest="/home/persie/Videos/mokap"
