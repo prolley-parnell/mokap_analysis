@@ -1,8 +1,8 @@
 import os
-from pickletools import uint8
 
 import matplotlib.pyplot as plt
 import cv2
+import pycocotools.mask as pmask
 import numpy as np
 import argparse
 
@@ -21,15 +21,20 @@ def scan_frames(video_dir):
     frame_names.sort(key=lambda p: int(os.path.splitext(p)[0]))
     return frame_names
 
+def enc_dict_to_mask(dictionary_obj, obj_id, frame_idx):
+    #Use pycoco decode to extract the mask from the dict
+    mask = pmask.decode(dictionary_obj[obj_id][frame_idx])
+    return np.squeeze(mask) #Remove empty dimension if it exists
+
 def drawMask(frame_idx, frame_name):
-    global frame, loaded_mask_file
+    global frame, loaded_mask_dict
     frame = cv2.imread(os.path.join(args.video_dir, frame_name))
-    m = np.extract(loaded_mask_file[:, 0] == frame_idx, loaded_mask_file[:, 1])
+    m = enc_dict_to_mask(loaded_mask_dict, obj_id=0, frame_idx=frame_idx)
+
     if m.any():
         color = np.array([50., 100., 0.], dtype=np.uint8)
-        r, c = np.unravel_index(m, np.shape(frame)[:2], order='C')
         segment_mask = np.zeros_like(frame, dtype=np.uint8)
-        segment_mask[r,c] = 255 * color.reshape(1, 1, -1)
+        segment_mask[m==1] = 255 * color.reshape(1, 1, -1)
         frame_masked = cv2.addWeighted(frame, 0.5, segment_mask, 0.5, 0)
         frame_masked[segment_mask == 0] = frame[segment_mask == 0]
         frame = frame_masked
@@ -42,8 +47,8 @@ def getFrame(frame_nr):
 
 
 def main(args):
-    global frame_names, loaded_mask_file, frame
-    loaded_mask_file = np.load(f"{args.source_folder}/{args.experiment_name}.npz")['obj_0'] #Allows the dict to be extracted from npy
+    global frame_names, loaded_mask_dict, frame
+    loaded_mask_dict = np.load(f"{args.source_folder}/{args.experiment_name}.npz", allow_pickle=True)['mask_dict'].item() #Allows the dict to be extracted from npy
 
     frame_names = scan_frames(args.video_dir)
     frame_slider_max = len(frame_names)
