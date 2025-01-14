@@ -1,7 +1,11 @@
-video_list="reduced_seed_experiment_list.txt"
+video_list=$1
 
 drive_mount="/media/persie/Storage/Segmentation"
 annotation_dest="/home/persie/Code/segment/data/input"
+
+folder_name=$2
+
+mkdir -p "${annotation_dest}/${folder_name}"
 
 cat ${video_list} | while read video_name || [[ -n $video_name ]];
 do
@@ -13,10 +17,10 @@ do
 #  echo $date_time
 #  echo $date
 
-  if [ ! -f "${annotation_dest}/${name}.tar.bz2" ]; then
+  if [ ! -f "${annotation_dest}/${folder_name}/${name}.tar.bz2" ]; then
     if [ -f "${drive_mount}/${name}.tar.bz2" ]; then
       echo "Copying ${name}.tar.bz2 to local folder"
-      cp "${drive_mount}/${name}.tar.bz2" "${annotation_dest}/"
+      cp "${drive_mount}/${name}.tar.bz2" "${annotation_dest}/${folder_name}/"
     else
       echo "I would if I could find it here: ${drive_mount}/${name}.tar.bz2"
     fi
