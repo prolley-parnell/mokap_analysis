@@ -57,7 +57,7 @@ if __name__ == "__main__":
             video_dir = Path('/home/persie/Videos/mokap')
             folder = Path('/home/persie/Code/3d_ant_data')
             prefix = '240905-1616'
-            session = 6
+            session = 30
             camera = 1
 
     PREFIX = args.prefix
