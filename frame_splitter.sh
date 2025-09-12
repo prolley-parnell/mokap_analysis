@@ -1,8 +1,8 @@
 #!/bin/bash
 parent_folder="$(pwd)"
-video_folder=/home/persie/Videos/mokap
+video_folder=/Users/persie/Movies/Mokap_Video/mokap
 video_list=$1
-destination_folder=/home/persie/Code/input
+destination_folder=/Users/persie/Movies/Mokap_Video/mokap
 #This is the typical file organisation video -> date -> date and time -> session
 
 echo "Starting trawl"

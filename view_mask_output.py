@@ -54,11 +54,11 @@ if __name__ == "__main__":
 
         @dataclass
         class args:
-            video_dir = Path('/home/persie/Videos/mokap')
-            folder = Path('/home/persie/Code/3d_ant_data')
+            video_dir = Path('/Users/persie/Movies/Mokap_Video/mokap')
+            folder = Path('/Users/persie/PhD_Code/3d_ant_data_rle')
             prefix = '240905-1616'
-            session = 30
-            camera = 1
+            session = 19
+            camera = 3
 
     PREFIX = args.prefix
     FOLDER = Path(args.folder) / PREFIX
@@ -67,7 +67,13 @@ if __name__ == "__main__":
 
     INPUT_FOLDER = FOLDER / 'inputs'
     PREFIX_VIDEO_FOLDER = args.video_dir / PREFIX
-    FRAME_FOLDER = Path(sorted(PREFIX_VIDEO_FOLDER.glob(f'{PREFIX}_cam{CAM_ID}*session{SESSION}'))[0]) #Should only collect one folder
+    try:
+        FRAME_FOLDER = Path(sorted(PREFIX_VIDEO_FOLDER.glob(f'{PREFIX}_cam{CAM_ID}*session{SESSION}'))[0]) #Should only collect one folder
+    except:
+        print("Could not find video frames folder")
+        exit(1)
+
+    #IF the frame folder has not been generated, this will produce an error
 
     rle_file = sorted((INPUT_FOLDER / 'segmentation').glob(f'{PREFIX}_cam{CAM_ID}*session{SESSION}.rle')) #Should only collect one file
 
