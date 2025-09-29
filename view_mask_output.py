@@ -57,8 +57,8 @@ if __name__ == "__main__":
             video_dir = Path('/Users/persie/Movies/Mokap_Video/mokap')
             folder = Path('/Users/persie/PhD_Code/3d_ant_data_rle')
             prefix = '240905-1616'
-            session = 19
-            camera = 3
+            session = 22
+            camera = 4
 
     PREFIX = args.prefix
     FOLDER = Path(args.folder) / PREFIX
